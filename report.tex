@@ -1,0 +1,142 @@
+\documentclass{tudelft-report}
+
+%% additional packages
+\usepackage{pdfpages}
+
+\usepackage{afterpage}
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
+
+\usepackage{lipsum}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{xcolor,colortbl}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{appendix}
+
+\definecolor{lightgrey}{rgb}{0.9,0.9,0.9}
+\definecolor{neonyellow}{rgb}{1,1,0}
+\definecolor{lightblue}{rgb}{0,0.5,1}
+\definecolor{orange}{rgb}{1,0.5,0} 
+\definecolor{pink}{rgb}{1,0,0.5}
+\definecolor{vectorGreen}{rgb}{0,1,0}
+
+\definecolor{dotblue}{rgb}{0,0.68,0.93}
+
+\newcolumntype{a}{>{\columncolor{Gray}}c}
+\newcolumntype{b}{>{\columncolor{white}}c}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\usepackage{hyphenat}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage[most]{tcolorbox}
+\usepackage{lipsum}
+\usepackage[justification=centering]{caption}
+\usepackage{ragged2e}
+\usepackage[export]{adjustbox}
+\usepackage{graphicx,nicefrac}
+\usepackage{can  cel}
+
+\newtcolorbox{definitioni}{
+  breakable,
+  fonttitle=\bfseries,
+  title={Info}
+}
+
+\newcommand*{\bluebullet}{\textcolor{dotblue}{\textbullet} \medskip}
+
+% mathematica
+\usepackage{amsmath, amsthm, amssymb, graphics, setspace}
+\DeclareMathOperator*{\argmin}{argmin}
+
+\newcommand{\mathsym}[1]{{}}
+\newcommand{\unicode}[1]{{}}
+
+
+% ------------------------------------------------------------------------
+\let\cleardoublepage\clearpage
+\usepackage{array, booktabs}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash}m{#1}}
+\usepackage{longtable}
+
+% \usepackage{enumitem}
+
+% \newlist{SubItemList}{itemize}{1}
+% \setlist[SubItemList]{label={$-$}}
+
+% \let\OldItem\item
+% \newcommand{\SubItemStart}[1]{%
+%     \let\item\SubItemEnd
+%     \begin{SubItemList}[resume]%
+%         \OldItem #1%
+% }
+% \newcommand{\SubItemMiddle}[1]{%
+%     \OldItem #1%
+% }
+% \newcommand{\SubItemEnd}[1]{%
+%     \end{SubItemList}%
+%     \let\item\OldItem
+%     \item #1%
+% }
+% \newcommand*{\SubItem}[1]{%
+%     \let\SubItem\SubItemMiddle%
+%     \SubItemStart{#1}%
+% }%
+% \tolerance=1
+% \emergencystretch=\maxdimen
+% \hyphenpenalty=10000
+% \hbadness=10000
+% TODO FIX HYPHENATION
+%--------------------------------------------------------------------------
+\usepackage[export]{adjustbox}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage[utf8x]{inputenc}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\begin{document}
+%% Use Roman numerals for the page numbers of the title pages and table of
+%% contents.
+\frontmatter
+
+
+\input{front-pages/titlepage}
+\afterpage{\blankpage}
+
+% \input{content/preface}
+\setcounter{page}{1}
+\input{front-pages/selbstaendigkeitserklaerung}
+\input{front-pages/abstract}
+\input{front-pages/summary}
+\input{front-pages/vorwort}
+
+\tableofcontents
+
+%% Use Arabic numerals for the page numbers of the chapters.
+\mainmatter
+
+\input{chapters/chapter-1}
+\input{chapters/chapter-2}
+\input{chapters/chapter-3}
+\input{chapters/chapter-4}
+\input{chapters/chapter-5}
+
+%% Use letters for the chapter numbers of the appendices.
+\appendix
+
+\begin{RaggedRight}
+	\bibliography{report.bib}
+\end{RaggedRight}
+\newpage
+
+\listoffigures
+\listoftables
+
+\input{appendix/anhang}
+
+\end{document}
+

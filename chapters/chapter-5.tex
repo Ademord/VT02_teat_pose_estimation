@@ -1,0 +1,98 @@
+
+\chapter{Conclusion}\label{chap:conclusion}
+% \section{Discussion and Conclusion}
+% 3 pages
+\section{Conclusion}]
+In this work we could show that is it possible to acquire a deep scene understanding from sequential
+data with supervised learning. In a simpliﬁed use-case such as the presented one, the system can
+successfully acquire a spatial scene understanding that includes objects, their shape, color and even
+their relationship with other objects. Although it is limited to the type of scenes the system was trained
+on, its versatility exceeds by far current mainstream object recognition systems such as ResNet [6].
+Unlike encoder-decoder-based scene understanding approaches such as [32], we do not need speciﬁed
+3D models for training but only a simple scene description that speciﬁes present objects including their
+positions and the camera poses of the captured images. 
+
+We could show that our system is capable of
+sequentially integrating information from new frames into the existing scene embedding vector. This
+capability is indeed highly remarkable because it includes the achievement of multiple non-trivial steps:
+1.The change in camera position relative to the previous frame needs to be evaluated. The system does
+not receive any information about the camera position or rotation in space, but needs to extract this
+information based on the diﬀerence between the already perceived and the new input frame.2.This
+extracted transformation of the camera position must be used to transform all remembered object
+positions. Some objects might be occluded by the obstacle or other present objects, and the system is
+not able to perceive these items in the current frame. Nonetheless, it is necessary to transform their
+remembered positions so that the system is able to return the correct position when queried. The
+precision of this process however, would need to be further improved when used for robotic grasping,
+as there is still an average deviation of 0.11 meters (about half the diameter of the object) from the
+ground truth when using the best performing approach.
+
+While our proposed system does not use separated streams for ventral and dorsal pathways, our information
+aggregation process is inspired by the quicker decaying dorsal memory and the more persistent
+ventral memory. This is represented by learned weights versus aggregated temporary information. This
+architecture seems to work great, especially with respect to the 3 diﬀerent shortcomings that were the
+focus of this work (see section 1.2). In the following, we discuss how our system overcomes them:
+    % \begin{itemize}
+    %     \item 1 paragraph big: describe what was achieved
+    %     \item 1 paragraph: describe our limitations
+    %     \item describe how we "overcame" the shortcommings: 3 paragraphs
+    %     \item closing remarks
+    % \end{itemize}
+\section{Towards Active Vision}
+Since this work was initially inspired by robotic interaction, we would see it as the next step to combine
+our vision-focused system with grasping approaches. An interesting direction would be to work towards
+solving benchmarks for robotic interaction such as RLBench [59].
+
+When approaching such tasks, we mainly see two possible paths to take: One relatively simple way
+would be to keep the perception and the grasping system separate and only use the output of the
+presented approach as input for a grasp generation algorithm, such as Dex-Net [60]. This would mean
+that the perception part would identify the target object and then forward its position to the grasp
+planning mechanism which would plan the grasp and pass it to the robotic arm for execution. As
+second option it would be possible that the condensed scene representation produced by our system
+would be beneﬁcial for grasp-generation. We think that a promising approach would be to train two
+streams for grasping. The ﬁrst stream could create a large number of possible grasps, while the other
+one would rate them with likelihood of success. Of course, the system would ﬁrst need to learn to
+include the required information in the scene representation, which might be a large leap compared to
+the information currently present within the trained system. However, with the human mind closely
+coupling perception and action as part of the dorsal pathway it seems that such a joint approach could
+work for robotic grasping too.
+    % \begin{itemize}
+    %     \item 1 big paragraph describing how active vision could improve accuracy and object permanence
+    % \end{itemize}
+\section{Where to Go From Here?}
+While the discussed approach successfully solves the tasks set, the system is still far from being a real
+replacement for existing computer vision algorithms in use. On the way to the application of a system
+like ours to solve tasks in the real world, it would be necessary to solve at least some of the following
+challenges:
+
+Real world data: In order to use an approach like the one presented in a real-world use-case, it would
+above all be necessary to transfer the approach to real data or at least more realistic synthetic data.
+With the goal to jointly improve both scene understanding and active vision, we would inspire future
+research to use real-time data gathering with simulated environments as for example Isaac Sim [61].
+This would allow non-discrete view-positions and thus a potentially better understanding. One aspect
+that still might not be solvable by using synthetic data is the noise of the depth-channel of the RGB-D
+data, which is quite prominent for most consumer class RGB-D-camera.
+
+More diﬀerent object classes/shapes: The presented solution uses only 5 primitive shapes with 7
+colors, which most likely does not reﬂect the conditions of a real world use case. A possible solution
+could be the use of large-scale 3D object data sets as used for Dex-Net [60]. Closely related to more
+diverse objects would be the capability to deal with duplicate objects. This could possibly be solved by
+adding multi-object output to all streams (as demonstrated with the Enumerating stream).
+
+Motion: In this work, we did not address the topic of motion, which does play a big roll in the real
+world. Environments like conveyor belts would be a domain where a scene understanding system like
+the one presented could prove highly useful. However, an application in such an environment would
+require previous research with dynamic scenes.
+
+Rotation axis detection: With only primitive objects such as cube, cylinders, etc., we decided not to
+include rotation information for our streams. However, for a large number of use cases it could be very
+useful to obtain the rotation of an object, so we would encourage future work to extend our approach
+to include rotation information.
+Grasping/bounding-box detection: For an actual application of robotic grasping, it would be necessary
+to generate possible grasping positions. We did not address this topic in the course of this work
+but leave the extension of the presented approach with grasping to further research. For more details
+see section 5.3.
+    % \begin{itemize}
+    %     \item describe in 5 small paragraphs 5 different future improvements for the voerall system
+    % \end{itemize}
+
+
