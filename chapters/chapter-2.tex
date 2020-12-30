@@ -3,14 +3,30 @@
 % 3 pages max, i was expecting 
 
 
-\section{Traditional Object Recognition Systems and their Limitations}
-\lipsum[2-5]
+\section{Traditional Object Segmentation Systems}\label{chap:2:segment}
+% \lipsum[2-5]
+
+With the rise of CNNs, the foundation has been set for well-performing image classiﬁcation approaches such as ResNet [6] or VGG [7]. In recent years, this development has gone even further towards systems which are capable of localizing or even masking out objects in images. Popular approaches with these capabilities are for example Mask R-CNN [9] or YOLO [8]. While using diﬀerent approaches, both systems have the capability of localizing and semantically classifying objects in images. Mask R-CNN is even able to mask the pixel-areas that are belonging to the object by using polygonal shapes. In the background both approaches still rely on ResNet for feature extraction.
+
+While systems like these are highly impressive and suﬃcient for many cases, they are still far away from human visual perception and actual scene understanding [10]. Especially the shortcomings presented in section 1.2 apply to this kind of systems. The resulting polygon-masks or bounding boxes are not projected into 3D space but merely mapped onto the 2D coordinates of the image. If employed on sequential data, both systems would also need to reevaluate the whole frame on each timestep as they are not able to remember or track objects. This is problematic when understanding a scene, as it is often not likely for the whole scene to be visible at once, but only partially. Therefore we believe, it is crucial for a system not to forget but to accumulate information over timesteps.
+
+Object detection is a computer vision task that attempts to localize and classify objects within an image. An extension of the problem involves assigning labels to the specific pixels in the image that belong to the detected objects, instead of only using the bounding boxes obtained during localization (object segmentation). 
+
+Research on object segmentation built upon previous models to reach the current state of the art of 2D object detection, which is called Mask R-CNN. The image saliency approach each (previous) model takes is described below:
+\begin{itemize}
+    \item \textbf{R-CNN:} a “selective search” algorithm proposes bounding boxes and features are obtained using a deep convolutional neural network (for example, AlexNet). Object classifications are then made with linear SVMs.
+    \item \textbf{Fast R-CNN:} unifies the feature detector, and the bounding box predictor approach into a single model, but the region of interests are still part of the input. The shared computation showed speed improvements.
+    \item \textbf{Faster R-CNN:} unifies the region proposal algorithm into the CNN model. This model merges a RPN (region proposal network) with Fast R-CNN.
+    \item \textbf{Mask R-CNN:} extends the previous model to add pixel-level image segmentation. A small fully connected network was added that per region of interest outputs a segmentation mask.
+\end{itemize}
+
+
 % %  half a page
 %     \begin{itemize}
 %         \item one paragraph of ML advancements 1960 - 2010
 %         \item one paragraph how these methods are good at image processing but they showed lack of reliability without actually understanding what is in the scene
 %     \end{itemize}
-\section{Going into the 3D World}
+\section{Going into the 3D World}\label{chap:2:3d}
 %  half a page
 \lipsum[2-5]
 
@@ -18,16 +34,26 @@
     %     \item one paragraph of rise of CNNs 2010 - present
     %     \item one paragraph how these methods are not enough for 3d space yet, and importance of not forgetting over timesteps
     % \end{itemize}
-\section{Automated Milking Robots}
+\section{Automated Milking Robots}\label{chap:2:melkroboter}
 % half a page
-\lipsum[2-5]
+The systems available on the market all consist of a manipulator and the associated basic equipment. Therefore, when using several manipulators at the same time, the basic equipment must also be present several times. The possibility of operating several manipulators on one base unit (the base unit contains the pumping and cooling units as well as the tanks for the milk) is not in itself a technical-scientific innovation. However, when several manipulators are used, the cost of the individual manipulator plays a significant role in the cost-effectiveness of the overall system. Therefore, the aim is to develop a manipulator that is cost-effective in terms of production, maintenance and operation, using state-of-the-art components. The content of this research project is limited only to the development of a new manipulator. The development of the complete system will be done by SLG outside this research project - the corresponding know-how is available due to years of experience in the development, production and maintenance of own milking systems. The in-house development of the overall system also allows SLG to determine all parameters of the milking process itself and thus adapt them to the specific conditions in Switzerland. The latter is not possible with the systems currently available.
+
+The robotic milking systems available on the market apply different strategies to detect the cows' teats. The goal is, after the cow has entered the milking parlor and the teats have been hygienically cleaned and stimulated, to apply the teat cups to the teats as quickly as possible. This involves moving the teat cup in front of the teat tip and then moving it in the direction of the teat towards the udder. Due to a vacuum, the teat cup then remains attached to the teat by itself until the vacuum is switched off after the milking process has been completed. Depending on the system, the cup is then removed by pulling back the hose hanging from the cup or by pulling on a separately attached rope.
+
+The attachment of the four buckets is done in the case of the Lely machines by moving a platform where all four buckets are moved simultaneously until they are attached. This design has the advantage that the
+This design has the advantage that the robot arm only has to travel the long way under the cow once per milking operation, and only short movements are then required for the attachment of the teat cups. In addition, if the cups do not stick to the teat, they fall back onto the platform and not onto the floor, where they become dirty and a time-consuming cleaning process becomes necessary. Thus, the docking time for these systems is typically about one minute for all four cups. However, this design also has drawbacks: The somewhat bulky design means that more volume must be moved between the cows' legs. This is uncomfortable for the cow and also means an increased risk of the cow stepping on or into the robot arm. In addition, the large mass of the platform also means that it is difficult to constantly follow the teat cups to the teat during the docking maneuver. Other products, such as DeLaval's VMS, use the robot to move each cup individually from a magazine next to the cow box to the teat. These manipulators can be built slimmer and lighter, allowing them to move more agilely. The disadvantage is that the docking process for four cups takes longer (about two minutes) and also that if the cup does not adhere properly to the teat, it will fall to the floor under the cow, requiring an additional cleaning procedure.
+
+The existing milking robots measure the position of the teats once before starting the docking procedure and then approach the teats in a purely position-controlled manner. In contrast, the new manipulator will be designed in such a way that it is able to detect the teats during the entire docking process in order to always be able to move the teat cup in the direction of the teat. This guarantees that even if the cow moves during the docking process, the teat is reached as quickly as possible and with a high degree of safety. In this way, the robustness and also the time of the docking process of the teat cups can be significantly improved. For this, in addition to the appropriate 3D sensor technology, a corresponding real-time evaluation algorithm is required. Furthermore, the manipulator itself must be designed in such a way that it can dynamically move a platform with the four teat cups accordingly. Last but not least, the control system must also be capable of executing sensor-guided movements in real time.
+
+Even if some competitors have equipped their latest milking robot models with more modern 3D sensors in the meantime, the sensor-guided dynamic target movement described here has not been implemented, among other things because the necessary manipulator design is not available.
+
 
     % \begin{itemize}
     %     \item one paragraph about cow robot milking industry
     %     \item ??
     %     \item one paragraph about cow teat morphology 
     % \end{itemize}
-\section{Summary}
+\section{Summary}\label{chap:2:summary}
 % half a page
 \lipsum[2-5]
 

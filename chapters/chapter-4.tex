@@ -1,7 +1,9 @@
 
-\chapter{System Evaluation}\label{chap:evaluation}
+\chapter{Results}\label{chap:evaluation}
 % \section{Prototyping/Evaluating the System}
 % 5-7 pages
+\lipsum[1]\todo{TODO}
+
 This section describes the evaluation of the solution, by describing the environment setup, the pipeline deployment framework, the training data collection and labelling steps, the neural network implementation and training. Finally, the pose estimation algorithms and the pipeline are evaluated.
 
 \section{Environment Setup}
@@ -9,7 +11,7 @@ This section describes the evaluation of the solution, by describing the environ
     
     \begin{figure}[h]
         \centering
-        \includegraphics[width=0.6\textwidth]{images/cow_setup.png}
+        \includegraphics[width=0.65\textwidth]{images/cow_setup.png}
         \caption{A prototype of the Job Information dialog}
         \label{fig:cow_setup}
     \end{figure}
@@ -30,6 +32,49 @@ This section describes the evaluation of the solution, by describing the environ
     
     The camera evaluation was done considering light conditions, shifting, object colors, a glass panel and lower resolutions: Figure \ref{fig:camera_choice} shows the performance of different camera models (for the detail on the camera names and manufacturers look at Appendix \ref{appendix:camera_choice}).
 \section{Pipeline Deployment}
+The deployment of the components was done using docker compose files to leverage the capabilities of microservices, where every component used behaves as a separate component in the application. The benefit gotten out of microservices is that they are small in size, bounded by their context, independently developed and deployable and they allow for message-based communication%todo ADD REF
+. 
+
+The set of libraries and tools used for building the robot application for pose estimation was the Robot Operating System (ROS)%todo ADD REF
+. ROS uses 'topics' as named buses over which ROS nodes exchange messages\ref{ros:topics}. %http://wiki.ros.org/Topics
+Figure \ref{fig:cow_topics} shows a high-level overview of the communication fashion between components, where the messages go through a ROS Cloud Bridge to be able to connect the robot's ROS local topics with the GPU ROS topics. 
+
+
+The architecture of the pipeline was designed so that the interfaces between components would be standarized in the topics message communication. Therefore, any teat points extraction algorithm could be used to consume the camera information and predict a 3D pose. The pipeline's design is described below:
+\begin{enumerate}
+    \item The camera publishes information (RGB image, point cloud, depth image) into the input ROS topic channel, which is consumed to identify the position and size of salient objects.
+    \item The ROSTeat node subscribes to this input channel, uses the neural network to predict the cow teat masks and publishes them into a masks channel.
+    \item The Pose Estimator (plug-and-play component) consumes the masks that were published, and synchronizes it with the camera information (so it is all processed as a single message). The following pose estimation is algorithm-specific. Each pose estimation algorithm is described in detail in the following section. The poses are then published into a poses channel.
+    \item The robot consumes messages from the poses channel and moves 10-15 cm forward towards the indicated 3D poses, until it is 20-30 cm close to the pose estimations. Then the attachment process is initiated.
+\end{enumerate}
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1\textwidth]{images/cow_topics.png}
+    \caption{A prototype of the Job Information dialog}
+    \label{fig:cow_topics}
+\end{figure}
+
+\lipsum[2]\todo{TODO}. The described pipeline can also be represented visually as shown by Figure \ref{fig:cow_design}.
+% The pose estimation algorithm was evaluated by error to GT
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/cow_design.png}
+    \caption{A prototype of the Job Information dialog}
+    \label{fig:cow_design}
+\end{figure}
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.6\textwidth]{images/cow_segment.png}
+%     \caption{A prototype of the Job Information dialog}
+%     \label{fig:cow_design}
+% \end{figure}
+
+% \begin{itemize}
+%     \item rgb input, setup of the cow and angle of the camera 
+%     \item networks architectures tried out: maskrcnn + pca, detectron + pca + subvariants
+% \end{itemize}
+
 For the deployment of the pipeline on the GPU servers, docker images were built per component (RViz, ROSPlay, ROSTeat, PoseEstimator, etc.). A set of docker compose files was used to control the deployment of the docker containers. Figure \ref{deploy:docker} shows a sample of a docker-compose file, which describes the services and the volumes being deployed.
 
 \begin{figure}[h]
@@ -38,7 +83,8 @@ For the deployment of the pipeline on the GPU servers, docker images were built 
     \caption{Image annotation example.}
     \label{fig:cow_docker_topology}
 \end{figure}
-\lipsum[2-3]\todo{TODO}
+
+% \lipsum[2-3]\todo{TODO}
 
 \section{Training Data Collection}
 The training data was collected using the robot's base recording procedure: the input images are stored as a video file in ROS format (ROSbag), which could be replayed for future testing or simulations. Once a ROSbag was stored, Rviz was used to collect RGB images and depth images at indicated timestamps (manual collection).
