@@ -2,20 +2,41 @@
 \chapter{Results}\label{chap:evaluation}
 % \section{Prototyping/Evaluating the System}
 % 5-7 pages
-\lipsum[1]\todo{TODO}
+% \lipsum[1]\todo{TODO}
 
-This section describes the evaluation of the solution, by describing the environment setup, the pipeline deployment framework, the training data collection and labelling steps, the neural network implementation and training. Finally, the pose estimation algorithms and the pipeline are evaluated.
 
-\section{Environment Setup}
-    The design rationale main purpose was to allow for portability and plug-and-play behavior of pose estimation algorithms. We also attempt to minimize assumptions on poses or camera angles (frame information) and account for the natural variation of the cow teats (udder morphology, colors, light conditions, etc.). As proof of concept for the project the test environment that was set up consisted of an artificial cow at the ZHAW and a robotic arm as shown by Figure \ref{fig:cow_setup}.
     
-    \begin{figure}[h]
+This chapter will provide and overview of the achieved results, the environment setup, the used data and the experiment process to solve the posed research question. 
+This chapter also adapts the structure proposed for machine learning algorithms proposed by \cite{luckert2016using}.
+%  the pipeline deployment details,  collection and labelling steps, the neural network implementation and training. Finally, the pose estimation algorithms and the pipeline are evaluated.
+Section \ref{chap:4:setup} illustrates the environment setup, 
+section \ref{chap:4:deployment} describes the deployment of the processing pipeline, 
+section \ref{chap:4:train_data} explains the data collection and neural network training, 
+% section \ref{chap:4:\ref{chap:4:training}} detailing the training , 
+and section \ref{chap:4:results} presents the pipeline results. The following questions will be answered in thoroughly:
+\begin{itemize}
+    \item What was the environment setup for the artificial cow?
+    \item What was the cloud deployment setup for the solution?
+    \item How many images were used for training, testing and optimizing the algorithms?
+    \item Which tools were used to acquire the metrics, create the data and perform the experiments?
+    % \item Which algorithm parameters were the most influential?
+    \item Which algorithm optimizations were done?
+    \item What were the achieved results on pose estimation?
+    % \item What was the setup of the best performing algorithm?
+    % \item Which algorithm optimizations were done?
+\end{itemize}
+
+\section{Environment Setup}\label{chap:4:setup}
+
+    % The design rationale's main concern was to allow for portability and plug-and-play behavior of pose estimation algorithms. We also attempt to minimize assumptions on poses or camera angles (frame information) and account for the natural variation of the cow teats (udder morphology, colors, light conditions, etc.). 
+    As proof of concept for the project the test environment that was set up consisted of an artificial cow at the ZHAW and a robotic arm as shown by Figure \ref{fig:cow_setup}. The hardware setup for such an environment consisted of the following:
+     \begin{figure}[h]
         \centering
-        \includegraphics[width=0.65\textwidth]{images/cow_setup.png}
-        \caption{A prototype of the Job Information dialog}
+        \includegraphics[width=0.7\textwidth]{images/cow_setup.png}
+        \caption{Artificial cow setup at the ZHAW}
         \label{fig:cow_setup}
     \end{figure}
-    The hardware setup for such an environment consisted of:
+    
     \begin{itemize}
         \item \textbf{Blackbox PC:} where the Robot Operating System was running the pose estimation and the robot manipulation.
         \item \textbf{UR10e robot:} industrial robot used in machine tending, palletizing, and packaging (6 axis).
@@ -23,177 +44,185 @@ This section describes the evaluation of the solution, by describing the environ
         \item \textbf{Dummy cow:} artificial cow model with fake teats to test the robotic attachment.
     \end{itemize}
    
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/camera_choice.png}
-        \caption{Camera performance comparison.}
-        \label{fig:camera_choice}
-    \end{figure}
     
-    The camera evaluation was done considering light conditions, shifting, object colors, a glass panel and lower resolutions: Figure \ref{fig:camera_choice} shows the performance of different camera models (for the detail on the camera names and manufacturers look at Appendix \ref{appendix:camera_choice}).
-\section{Pipeline Deployment}
+    An important aspect in the physical setup for the given task is the specific camera characteristics. A camera can have different performances as a factor to light conditions, shifting, object colors, glass panels and lower resolutions. Given the systemic error a camera can introduce, it is essential to minimize the influence of it. Therefore, a camera evaluation was carried out to compare diverse camera manufacturers and models. Appendix \ref{appendix:camera_evaluation} illustrates the performance of different cameras that were available for evaluation, and presents a clear model that outperforms the rest. 
+
+\newpage
+\section{Pipeline Deployment}\label{chap:4:deployment}
 The deployment of the components was done using docker compose files to leverage the capabilities of microservices, where every component used behaves as a separate component in the application. The benefit gotten out of microservices is that they are small in size, bounded by their context, independently developed and deployable and they allow for message-based communication%todo ADD REF
 . 
-
-The set of libraries and tools used for building the robot application for pose estimation was the Robot Operating System (ROS)%todo ADD REF
-. ROS uses 'topics' as named buses over which ROS nodes exchange messages\ref{ros:topics}. %http://wiki.ros.org/Topics
-Figure \ref{fig:cow_topics} shows a high-level overview of the communication fashion between components, where the messages go through a ROS Cloud Bridge to be able to connect the robot's ROS local topics with the GPU ROS topics. 
-
-
-The architecture of the pipeline was designed so that the interfaces between components would be standarized in the topics message communication. Therefore, any teat points extraction algorithm could be used to consume the camera information and predict a 3D pose. The pipeline's design is described below:
-\begin{enumerate}
-    \item The camera publishes information (RGB image, point cloud, depth image) into the input ROS topic channel, which is consumed to identify the position and size of salient objects.
-    \item The ROSTeat node subscribes to this input channel, uses the neural network to predict the cow teat masks and publishes them into a masks channel.
-    \item The Pose Estimator (plug-and-play component) consumes the masks that were published, and synchronizes it with the camera information (so it is all processed as a single message). The following pose estimation is algorithm-specific. Each pose estimation algorithm is described in detail in the following section. The poses are then published into a poses channel.
-    \item The robot consumes messages from the poses channel and moves 10-15 cm forward towards the indicated 3D poses, until it is 20-30 cm close to the pose estimations. Then the attachment process is initiated.
-\end{enumerate}
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=1\textwidth]{images/cow_topics.png}
-    \caption{A prototype of the Job Information dialog}
-    \label{fig:cow_topics}
-\end{figure}
-
-\lipsum[2]\todo{TODO}. The described pipeline can also be represented visually as shown by Figure \ref{fig:cow_design}.
-% The pose estimation algorithm was evaluated by error to GT
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/cow_design.png}
-    \caption{A prototype of the Job Information dialog}
-    \label{fig:cow_design}
-\end{figure}
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.6\textwidth]{images/cow_segment.png}
-%     \caption{A prototype of the Job Information dialog}
-%     \label{fig:cow_design}
-% \end{figure}
-
-% \begin{itemize}
-%     \item rgb input, setup of the cow and angle of the camera 
-%     \item networks architectures tried out: maskrcnn + pca, detectron + pca + subvariants
-% \end{itemize}
-
-For the deployment of the pipeline on the GPU servers, docker images were built per component (RViz, ROSPlay, ROSTeat, PoseEstimator, etc.). A set of docker compose files was used to control the deployment of the docker containers. Figure \ref{deploy:docker} shows a sample of a docker-compose file, which describes the services and the volumes being deployed.
+% For the deployment of the pipeline on the GPU servers, docker images were built per component (RViz, ROSPlay, ROSTeat, PoseEstimator, etc.). A set of docker compose files was used to control the deployment of the docker containers. 
+Figure \ref{fig:cow_docker_topology} shows a sample docker-compose file, which describes the services and the volumes being deployed. In this particular example, Pose Estimator waits for ROSTeat to be succesfully deployed, whereas ROSTeat waits for ROSPlay.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth]{images/cow_docker_topology.png}
-    \caption{Image annotation example.}
+    \includegraphics[width=1\textwidth]{images/cow_docker_topology.png}
+    \caption{Example of a Docker-compose Deployment}
     \label{fig:cow_docker_topology}
 \end{figure}
 
-% \lipsum[2-3]\todo{TODO}
+The components proposed in the previous Chapter were developed both in Python 2.7 and 3.6, which was not an obstacle given the modular approach. The only problem encountered were the outdated packages given that Python 2.7 has been deprecated as of January 1st, 2020. 
+Aditionally, the set of libraries and tools used for developing the pose estimation component in the Robot Base was the Robot Operating System (ROS). "ROS provides the services you would expect from an operating system, including hardware abstraction, low-level device control, implementation of commonly-used functionality, message-passing between processes, and package management" \cite{2020ROS}. In this sense, the specific version of ROS used for the development were ROS Melodic and ROS Noetic.
 
-\section{Training Data Collection}
-The training data was collected using the robot's base recording procedure: the input images are stored as a video file in ROS format (ROSbag), which could be replayed for future testing or simulations. Once a ROSbag was stored, Rviz was used to collect RGB images and depth images at indicated timestamps (manual collection).
 
-The collected images were then imported into LabelMe 
-\ref{labelme}, where the pixel-wise segmentation areas were manually marked and the class label assigned. Figure \ref{fig:cow_labelme} shows a glimpse of the labelling process. Once an image has been labelled the pixel-wise segmentation is stored as a polygon in .json file next to the original image.
+\section{Segmentation Network Training}\label{chap:4:train_data}
+
+The training data was collected using the robot's base recording procedure, which stores the set of input frames observed as a video file in ROS format (ROSbag), which could be replayed for future testing or simulations. Rviz can then be used to collect the RGB images and depth images at manually indicated timestamps. The RGB-D input received from the camera consists of images with a resolution of 640 x 480 x 4 pixels. 
+% Each pose estimation algorithm receives the input from the camera and the segmentation mask and processes it differently. 
+% This was done to analyze the precision from different sources of information (for example, point cloud versus depth image).
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth]{images/cow_labelme.png}
+    \includegraphics[width=0.4\textwidth]{images/cow_labelme.png}
     \caption{Image annotation example.}
     \label{fig:cow_labelme}
 \end{figure}
+The collected realistic images are then imported into the image annotation tool LabelMe\cite{2021labelme}. Labelme is used to manually mark the pixel-wise segmentation areas and to assign the class labels.  Figure \ref{fig:cow_labelme} shows a glimpse of the labelling tool. Once an image has been labelled the pixel-wise segmentation is stored as a polygon in JSON file next to the original image. As a final step, a Python script is used to merge all the individual JSON files into one, before feeding the data set into the network for training.
+
+\begin{longtable}{@{} p{8cm} c @{}} \toprule
+% \textbf{asd}       & \textbf{Segment Cow Teats from Image} \\ \midrule
+Number of Synthetic Training Images generated                   & 400'000 \\ \cmidrule{1-2}
+Number of Synthetic Validation Images generated                   & 20'000 \\ \cmidrule{1-2}
+Number of Realistic Training Photos collected             & 192 \\ \cmidrule{1-2}
+Number of Realistic Validation Photos collected             & 192 \\ \cmidrule{1-2}
+Total Number of Features                    & 1 \\ \bottomrule
+\caption{Data sets statistics.} \label{tab:dataset-statistics} \\
+\end{longtable}
+
+The network training was performed on an NVIDIA Tesla T4 GPU\cite{2021testat4}.
+% with 16 GB VRAM. 
+CUDA\cite{2021nvidia-cuda} was used to parallelize the computations both in training and testing, and therefore speed up the processing times. Table \ref{tab:dataset-statistics} provides an overview of the data set statistics used for training. 
+Additionally, the docker images were configured so that the training parameters can be input as environment variables. These parameters include the data set, local weights and the remote weights locations, the epochs, score threshold, learning rate, etc. Table \ref{tab:train-results} show the classification errors of the methods trained
+
+\begin{longtable}{@{} p{5cm} C{2cm}           C{2.5cm}                   C{1.5cm}           C{1.5cm}         @{}} \toprule
+\textbf{Method}              & \textbf{Dataset} & \textbf{Learning rate}   & \textbf{Epochs}  & \textbf{Accuracy}  \\ \midrule
+matterport/MaskRCNN - Py2.7         & Realistic        & 0.002                    &  100             & 97\%          \\ \midrule
+matterport/MaskRCNN - Py3.6         & Realistic        & 0.002                    &  100             & 97\%          \\ \midrule
+Detectron2/MaskRCNN                 & Realistic        & 0.00025                  &  2000            & 98\%          \\ \midrule
+Detectron2/MaskRCNN                 & Synthetic        & 0.00025                  &  2000            & 0\%          \\ \bottomrule
+\caption{Segmentation networks performance.} \label{tab:train-results}
+\end{longtable}
+
+
+As shown above, the synthetic data set proved the images were not photorealistic enough to close the reality gap. Both the matterport and the Detectron2 implementations of MaskRCNN showed similar accuracy. However, the implementation from matterport in Python 2.7 had an initial average loading time of 40 seconds and the implementation in Python 3.6 had a 4 seconds average loading time. Moreover, benchmarks show the implementations from matterport have a 4x slower throughput (imgs/sec) compared to Detectron2 \cite{2021detectron2-benchmark}. These drawbacks and the generally better performance of the Detectron2 implementation led to it being chosen for the segmentation task. 
+% Finally, the increase of the prediction score threshold was the only optimization done, other than the parameters shown in Table \ref{tab:train-results}.
+
+\section{Results} \label{chap:4:results}
+\subsection{Research Question}
+\label{sec:results-research-question}
+% \lipsum[1-4]
+
+The research question tackles the pose estimation of cow teats. This section will describe the results obtained for each approach proposed, along with their respective optimizations. 
+
+Table \ref{tab:test-results} provides a brief summary of the results and the general performance of the used algorithms, which are discussed afterwards in more detail.
+
+\begin{longtable}
+{@{} l c c @{}} \toprule
+\textbf{Method}                     & \textbf{Accuracy}     & \textbf{Standard Deviation}       \\ \midrule
+% PCA                                 & 97\%                  & 0.015                             \\ \midrule
+MAV                                 & \textbf{97\% }                 & \textbf{0.43}                             \\ \midrule
+DOPE                                & 0\%                  & -                             \\ \midrule
+RANSAC                              & 0\%                   & -                             \\ \bottomrule
+\caption{Statistics of tested methods.} \label{tab:test-results}                          \\
+\end{longtable}
+
+% The following Table displays the results for the PCA-variant algorithm. The variants presented are optimized by modifying the offset and the averaging mechanism used to calculate the Teat Tip coordinates.
+% \begin{longtable}{|p{1.5cm}|p{3cm}|C{1.5cm}|}                                              \hline
+% \multicolumn{3}{|l|}{\textbf{PCA-variant}}                                                       \\\hline
+% \textbf{Offset}         & \textbf{Averaging Method}   & \textbf{Accuracy}                \\ \hline
+% Fixed                   & Single Point                & 97\%                             \\ \hline
+% Mixed                   & Single Point                & 97\%                             \\ \hline
+% Fixed                   & Average: 1/3rd              & 97\%                             \\ \hline
+% Mixed                   & Average: 1/10th             & 97\%                             \\ \hline
+% \caption{Overview of the best MAV results for the respective offset-averaging mechanisms combinations.} \label{tab:test-results}                          
+% \end{longtable}
+
+% The following Table displays the results for the Normals algorithm. The variants presented are optimized by modifying the offset and the averaging mechanism used to calculate the Teat Tip coordinates.
+% \begin{longtable}{|p{1.5cm}|p{3cm}|C{1.5cm}|}                                              \hline
+% \multicolumn{3}{|l|}{\textbf{Normals}}                                                       \\\hline
+% \textbf{Offset}         & \textbf{Averaging Method}   & \textbf{Accuracy}                \\ \hline
+% Fixed                   & Single Point                & 97\%                             \\ \hline
+% Mixed                   & Single Point                & 97\%                             \\ \hline
+% Fixed                   & Average: 1/3rd              & 97\%                             \\ \hline
+% Mixed                   & Average: 1/10th             & 97\%                             \\ \hline
+% \caption{Overview of the best MAV results for the respective offset-averaging mechanisms combinations.} \label{tab:test-results}                          
+% \end{longtable}
+
+The following Table \ref{tab:DOPE-results} displays the results for the DOPE algorithm. DOPE uses FAT formatted data sets, which are generated using NDDS, in Unreal Engine 4. These data sets are characterized for being synthetic photorealistic images. The data set variants presented below are optimized by modifying the parameters in data set used, such as:
+% The variants used include changes in: 
+the realism degree in the materials used for the object textures, the usage of rotation in the focus object, and the usage of obstructive objects. Aditionally, all data sets include five different photorealistic scenes: beach, studio, temple, meadow and zen garden. Surprisingly none of the data sets were realistic enough to close the reality gap, which reflected in DOPE not outputting any predictions.
+
+\begin{longtable}{|l|c||c|}                            \hline
+\multicolumn{3}{|l|}{\textbf{Deep Object Pose}}              \\\hline
+\textbf{Dataset}            & \textbf{Size}  & \textbf{Functional}            \\ \hline
+NDDS Realistic (base)       & 260k      & No                             \\ \hline
+NDDS Realistic 2.0          & 80k       & No                             \\ \hline
+NDDS with Obstruction       & 80k       & No                             \\ \hline
+NDDS with Rotation          & 80k       & No                             \\ \hline
+NDDS Small                  & 20k       & No                             \\ \hline
+\caption{Overview of the best DOPE results for the respective dataset variations.} \label{tab:DOPE-results}
+\end{longtable}
+
+The results for the RANSAC algorithm are shown in Table \ref{tab:ransac-results}. The skimage implementation was used for both RANSAC and direct ORB matching. The variants presented were surprinsingly not succesful at matching the cow teats patterns. It is suspected that RANSAC and ORB matching are not the best approach for identifying simple texture objects such as the cow teats. 
+Figure \ref{fig:ransac-results} illustrates the suspicion and the behavior of RANSAC on both the RGB and the depth images. RANSAC was tested by varying the ORB number of keypoints, the ORB threshold and RANSAC's residual threshold as well as adding a denoising step.  
+% \begin{longtable}{|p{1.5cm}|p{3cm}|C{1.5cm}|}                                              \hline
+% \multicolumn{3}{|l|}{\textbf{RANSAC}}                                                       \\\hline
+% \textbf{Offset}         & \textbf{Averaging Method}   & \textbf{Functional}                \\ \hline
+% Fixed                   & Single Point                & No\%                             \\ \hline
+% Mixed                   & Single Point                & No\%                             \\ \hline
+% Fixed                   & Average: 1/3rd              & No\%                             \\ \hline
+% Mixed                   & Average: 1/10th             & No\%                             \\ \hline
+% \caption{Overview of the best MAV results for the respective offset-averaging mechanisms combinations.} \label{tab:test-results}                          
+% \end{longtable}
+\begin{longtable}{|c|c|c|c||c|}                            \hline
+\multicolumn{5}{|l|}{\textbf{RANSAC / ORB Matching}}              \\\hline
+\textbf{ORB \#keypoints} & \textbf{ORB threshold} & \textbf{Residual Threshold} & \textbf{Denoising}       & \textbf{Functional}      \\ \hline
+        20      & 0.08      & N/A (ORB matching)       & No     &  No               \\ \hline
+        200     & 0.08      & N/A (ORB matching)       & No     &  No               \\ \hline
+        200     & 0.02      & 0.5       & No     &  No               \\ \hline
+        200     & 0.02      & 0.5       & Yes    &  No               \\ \hline
+        200     & 0.02      & 0.9       & No     &  No               \\ \hline
+        200     & 0.02      & 0.9       & Yes    &  No               \\ \hline
+        200     & 0.08      & 0.5       & No     &  No               \\ \hline
+        200     & 0.08      & 0.5       & Yes    &  No               \\ \hline
+        200     & 0.08      & 0.9       & No     &  No               \\ \hline
+        200     & 0.08      & 0.9       & Yes    &  No               \\ \hline
+\caption{Overview of the best MAV results for the respective offset-averaging mechanisms combinations.} \label{tab:ransac-results}                          
+\end{longtable}
+
+ \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.9\textwidth]{images/cow_ransac.png}
+        \caption{RANSAC's behavior on the cow data set.}
+        \label{fig:ransac-results}
+    \end{figure}
     
-% \begin{itemize}
-%     \item 1 paragraph for describing the picture taking process from rosbags
-%     \item 1 paragraph to describe how to label images, and then feed them to the detectron container
-% \end{itemize}
-We acknowledge that synthetic data does not reﬂect real camera data in regards of noise or diﬀerent
-lighting conditions. However we are conﬁdent that the approaches used can be transferred to real-world
-data if suﬃcient labeled data (see discussion in section 5.4) are available, as has been shown in diﬀerent
-other publications [48, 49, 50].
+The following table 
+% \ref{tab:mav-results} displays 
+presents the results for the "MAV" algorithm. The algorithm leverages the segmentation mask and overlays it over the depth image. Afterwards, the 2D points are proyected into 3D space and PCA is used to calculate the teat direction. Finally, the N points (averaging method) at the bottom of the teat (using the direction indicated by PCA's first component) are averaged to obtain a "teat's tip coordinates". A manual offset was added to the obtained coordinates to attempt to fix the (x,y,z) error observed. The MAV optimizations presented are a combination of the offset and the averaging method.
 
-For the generated scenes, we attempt to reach a visual level that includes many real-world properties
-such as shadows, specular highlights, etc., but is still simple enough to make sure that potential
-shortcomings of the algorithm cannot be accounted to scenes that are too complicated or to noisy.
-We also include uniquely colored walls to enable the algorithm to internally assign global positions to
-the objects (e.g. “The yellow cylinder is located towards the corner of the red and green wall”). Due
-to time constraints, we do not evaluate the inﬂuence of these colored walls as part of this work but
-leave this question open to follow-up research. To add additional variance to the input images, the
-camera gets randomly rotated for each scene along the horizontal axis with an angle between +12.5
-and −12.5
-. As a consequence, this rotation needs to be considered when inferring positions of objects
-or transforming stored object positions on frame changes.
+\begin{longtable}{|l|l||c|c|c|}                                              \hline
+\multicolumn{5}{|l|}{\textbf{MAV}}                                                       \\\hline
+\textbf{Offset}         & \textbf{Averaging Method}   
+& \textbf{Average Error}  & \textbf{Standard Deviation}  & \textbf{Execution Time}                 \\ \hline
+Fixed                   & Single Point                & 1.13            & 2.8              & 0.26 - 1.5 secs   \\ \hline
+Calculated              & Single Point                & 1.77            & 3.3              & 0.26 - 1.5 secs   \\ \hline
+Fixed                   & Average: 1/3rd              & \textbf{0.67}   & \textbf{2.4}     & 0.26 - 1.5 secs                     \\ \hline
+Calculated              & Average: 1/3rd              & 1.54            & 2.93             & 0.26 - 1.5 secs    \\ \hline
+Fixed                   & Average: 1/10th             & 0.96            & 2.55             & 0.26 - 1.5 secs     \\ \hline
+Calculated              & Average: 1/10th             & 1.51            & 2.87             & 0.26 - 1.5 secs    \\ \hline
+\caption{Overview of the best MAV results for the respective offset-averaging mechanisms combinations.} \label{tab:mav-results}                          
+\end{longtable}
 
-\section{Neural Network Training}
-All architectures are implemented in Python 3.7 and use PyTorch as machine learning framework
-[51]. To train the system, we use a combination of 20, 000 scenes with and 20, 000 scenes without
-occlusion. We let the system draw a random sample from this set for each batch. The used batch
-size varies for each architecture and is determined by the memory requirements of the approach. For
-the baseline version, we use 128, the CNN + RNN version uses 32 and the ConvLSTM version 64
-elements per batch. The learning rate is the same for all approaches at 0.0001. We did not use any
-form of hyperparameter search, but relied only on parameters that seemed to provide a stable training
-performance with a few test runs. It can therefore be assumed that other parameter combinations exist
-which would improve the training performance even further. All used network architectures are listed
-in Appendix A
+% \subsection{Research Question 2}
 
-All training is performed on a NVIDIA Titan Xp Graphics Processing Unit (GPU) with 12 GB VRAM
-and uses CUDA [52] to speed up the process.
-The labelled images are used as input for a docker container which expects the following variables for training the classification network:
-    \begin{itemize}
-        \item TRAIN: 
-        \item DATASET:
-        \item 
-        % \item 1 paragraph describe implementations, docker, etc
-        % \item 1 paragraph describe the training hyperparameters for the networks
-    \end{itemize}
-A set of hyperparameters for the training of the network can be set, such as:
+% The second research question tackles the evaluation of the pose estimation of cow teats.
+
+% \subsection{Quality Ranking of Predictions}
+\subsection{Deliverables}
+The following deliverables will be handled in with this Vertiefungsarbeit:
 \begin{itemize}
-    \item EPOCHS:
-    \item THRESHOLD:
-    \item LR:
+    \item This work produced a pose estimation system, which is able to estimate a cow teat's pose with an average error of 0.67 cm and a standard deviation of 2.4 cm. 
+    \item This work also contributed to two other variations of the MAV algorithm that were developed by the project team for the cow teats project.
+    \item For future research, an Unreal Engine 4 project with 5 different photorealistic scenes for a synthetic data set generation, including a cow teats data set containing over 400k images for pose estimation.
 \end{itemize}
-% \section{Environment Setup}
-% \begin{itemize}
-%     \item how did we setup the environment (fake cow, training images, arm)
-%     \item did we find some benchmark to compare to?
-%     \item goal of system
-% \end{itemize}
-
-\section{Pipeline Evaluation}
-We evaluate all networks on scenes with and without occlusion. For both setups, we use 1,000
-test scenes each, which have never been seen on training time. We only list a subset of all stream
-evaluations here. The evaluation of remaining streams can be found in the Appendix A. For evaluation
-of the enumeration stream, we use the following metric (which we call success rate):
-
-% S =
-% #correctly identiﬁed
-% #correctly identiﬁed + #incorrectly identiﬁed
-
-As “correctly identiﬁed” we only count objects which are present in the scene with the matching color
-and shape. As incorrectly classiﬁed objects we count objects which are duplicate, do not exist at all or
-have not been found by the network. This is similar to accuracy, with the diﬀerence that the number of
-correctly and incorrectly classiﬁed objects do not need to add up to the number of ground truth objects.
-In the Table 3.1, we evaluate a subset of the streams presented in section 3.3 on the evaluation scenes
-without occlusion.
-
-As visible in Table 3.1, the CNN + RNN approach outperforms both the baseline and the ConvLSTM
-version remarkably for all streams. While it could be assumed that the baseline would not perform
-as well as CNN + RNN due to a lack of accumulating capability, the mediocre performance of the
-ConvLSTM version is relatively surprising. We are unsure of the cause and cannot recognize a speciﬁc
-pattern in which the ConvLSTM is under-performing. However, we assume that the fewer convolutional
-layers before the ConvLSTM do not allow for such a good feature extraction as this is the case in the
-CNN + RNN version. 
-% This recurrent layer therefore needs to operate on less abstracted information,
-% which could prove diﬃcult. CNN + RNN on the other hand, does exceptionally well, and if it struggles,
-% then mainly in cases where the two shapes “Cube” and “Cube-Hollow” are present, which do look
-% similar by nature. The following Table 3.2 lists the results of evaluating scenes with occlusion.
-
-An evaluation with ﬁne tuning a pre-trained ResNet-18 as feature extractor did not lead to any
-noticeable improvements. We assume that our scenes are generally too simple to actually use advantages
-of such approaches. For more complex scenes, this needs to be re-evaluated.
-    % \begin{itemize}
-    %     \item 1 paragraph describe how we evaluated the algorithms: using the error from the teats on x y z
-    %     \item 1 paragraph describe our interpretation of the results 
-    %     \item describe how some other changes did not improve
-    % \end{itemize}
-% \section{VOID: Towards "better" Pose Estimation Algorithms}
-%     \begin{itemize}
-%         \item describe how a generic pose estimation algorithm should work/what we expect
-%         \item describe something similar to 3d pose algorithm challenges and future work for generic SotA of 3d pose algorithms from related work
-%     \end{itemize}
