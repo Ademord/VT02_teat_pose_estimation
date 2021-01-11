@@ -7,7 +7,7 @@
 
     
 This chapter will provide and overview of the achieved results, the environment setup, the used data and the experiment process to solve the posed research question. 
-This chapter also adapts the structure proposed for machine learning algorithms proposed by \cite{luckert2016using}.
+This chapter also adapts the structure proposed for machine learning algorithms proposed by \textcite{luckert2016using}.
 %  the pipeline deployment details,  collection and labelling steps, the neural network implementation and training. Finally, the pose estimation algorithms and the pipeline are evaluated.
 Section \ref{chap:4:setup} illustrates the environment setup, 
 section \ref{chap:4:deployment} describes the deployment of the processing pipeline, 
@@ -62,7 +62,7 @@ Figure \ref{fig:cow_docker_topology} shows a sample docker-compose file, which d
 \end{figure}
 
 The components proposed in the previous Chapter were developed both in Python 2.7 and 3.6, which was not an obstacle given the modular approach. The only problem encountered were the outdated packages given that Python 2.7 has been deprecated as of January 1st, 2020. 
-Aditionally, the set of libraries and tools used for developing the pose estimation component in the Robot Base was the Robot Operating System (ROS). "ROS provides the services you would expect from an operating system, including hardware abstraction, low-level device control, implementation of commonly-used functionality, message-passing between processes, and package management" \cite{2020ROS}. In this sense, the specific version of ROS used for the development were ROS Melodic and ROS Noetic.
+Aditionally, the set of libraries and tools used for developing the pose estimation component in the Robot Base was the Robot Operating System (ROS). "ROS provides the services you would expect from an operating system, including hardware abstraction, low-level device control, implementation of commonly-used functionality, message-passing between processes, and package management" \cite{2020ROS}. The specific versions of ROS used for the development were ROS Melodic and ROS Noetic.
 
 
 \section{Segmentation Network Training}\label{chap:4:train_data}
@@ -77,28 +77,28 @@ The training data was collected using the robot's base recording procedure, whic
     \caption{Image annotation example.}
     \label{fig:cow_labelme}
 \end{figure}
-The collected realistic images are then imported into the image annotation tool LabelMe\cite{2021labelme}. Labelme is used to manually mark the pixel-wise segmentation areas and to assign the class labels.  Figure \ref{fig:cow_labelme} shows a glimpse of the labelling tool. Once an image has been labelled the pixel-wise segmentation is stored as a polygon in JSON file next to the original image. As a final step, a Python script is used to merge all the individual JSON files into one, before feeding the data set into the network for training.
+The collected realistic images are then imported into the image annotation tool LabelMe \cite{2021labelme}. Labelme is used to manually mark the pixel-wise segmentation areas and to assign the class labels.  Figure \ref{fig:cow_labelme} shows a glimpse of the labelling tool. Once an image has been labelled the pixel-wise segmentation is stored as a polygon in JSON file next to the original image. As a final step, a Python script is used to merge all the individual JSON files into one, before feeding the data set into the network for training.
 
 \begin{longtable}{@{} p{8cm} c @{}} \toprule
 % \textbf{asd}       & \textbf{Segment Cow Teats from Image} \\ \midrule
 Number of Synthetic Training Images generated                   & 400'000 \\ \cmidrule{1-2}
 Number of Synthetic Validation Images generated                   & 20'000 \\ \cmidrule{1-2}
-Number of Realistic Training Photos collected             & 192 \\ \cmidrule{1-2}
-Number of Realistic Validation Photos collected             & 192 \\ \cmidrule{1-2}
+Number of Real Training Photos collected             & 192 \\ \cmidrule{1-2}
+Number of Real Validation Photos collected             & 192 \\ \cmidrule{1-2}
 Total Number of Features                    & 1 \\ \bottomrule
 \caption{Data sets statistics.} \label{tab:dataset-statistics} \\
 \end{longtable}
 
-The network training was performed on an NVIDIA Tesla T4 GPU\cite{2021testat4}.
+The training of MaskRCNN and DOPE was performed on an NVIDIA Tesla T4 GPU \cite{2021testat4}.
 % with 16 GB VRAM. 
-CUDA\cite{2021nvidia-cuda} was used to parallelize the computations both in training and testing, and therefore speed up the processing times. Table \ref{tab:dataset-statistics} provides an overview of the data set statistics used for training. 
+CUDA \cite{2021nvidia-cuda} was used to parallelize the computations both in training and testing, and therefore speed up the processing times. Table \ref{tab:dataset-statistics} provides an overview of the data set statistics used for training. 
 Additionally, the docker images were configured so that the training parameters can be input as environment variables. These parameters include the data set, local weights and the remote weights locations, the epochs, score threshold, learning rate, etc. Table \ref{tab:train-results} show the classification errors of the methods trained
 
 \begin{longtable}{@{} p{5cm} C{2cm}           C{2.5cm}                   C{1.5cm}           C{1.5cm}         @{}} \toprule
 \textbf{Method}              & \textbf{Dataset} & \textbf{Learning rate}   & \textbf{Epochs}  & \textbf{Accuracy}  \\ \midrule
-matterport/MaskRCNN - Py2.7         & Realistic        & 0.002                    &  100             & 97\%          \\ \midrule
-matterport/MaskRCNN - Py3.6         & Realistic        & 0.002                    &  100             & 97\%          \\ \midrule
-Detectron2/MaskRCNN                 & Realistic        & 0.00025                  &  2000            & 98\%          \\ \midrule
+matterport/MaskRCNN - Py2.7         & Real        & 0.002                    &  100             & 97\%          \\ \midrule
+matterport/MaskRCNN - Py3.6         & Real        & 0.002                    &  100             & 97\%          \\ \midrule
+Detectron2/MaskRCNN                 & Real        & 0.00025                  &  2000            & 98\%          \\ \midrule
 Detectron2/MaskRCNN                 & Synthetic        & 0.00025                  &  2000            & 0\%          \\ \bottomrule
 \caption{Segmentation networks performance.} \label{tab:train-results}
 \end{longtable}
@@ -155,8 +155,8 @@ the realism degree in the materials used for the object textures, the usage of r
 \begin{longtable}{|l|c||c|}                            \hline
 \multicolumn{3}{|l|}{\textbf{Deep Object Pose}}              \\\hline
 \textbf{Dataset}            & \textbf{Size}  & \textbf{Functional}            \\ \hline
-NDDS Realistic (base)       & 260k      & No                             \\ \hline
-NDDS Realistic 2.0          & 80k       & No                             \\ \hline
+NDDS Photorealistic (base)       & 260k      & No                             \\ \hline
+NDDS Photorealistic 2.0          & 80k       & No                             \\ \hline
 NDDS with Obstruction       & 80k       & No                             \\ \hline
 NDDS with Rotation          & 80k       & No                             \\ \hline
 NDDS Small                  & 20k       & No                             \\ \hline
@@ -199,7 +199,7 @@ Figure \ref{fig:ransac-results} illustrates the suspicion and the behavior of RA
     
 The following table 
 % \ref{tab:mav-results} displays 
-presents the results for the "MAV" algorithm. The algorithm leverages the segmentation mask and overlays it over the depth image. Afterwards, the 2D points are proyected into 3D space and PCA is used to calculate the teat direction. Finally, the N points (averaging method) at the bottom of the teat (using the direction indicated by PCA's first component) are averaged to obtain a "teat's tip coordinates". A manual offset was added to the obtained coordinates to attempt to fix the (x,y,z) error observed. The MAV optimizations presented are a combination of the offset and the averaging method.
+presents the results for the "MAV" algorithm. The optimizations presented are a combination of the offset and the averaging method.
 
 \begin{longtable}{|l|l||c|c|c|}                                              \hline
 \multicolumn{5}{|l|}{\textbf{MAV}}                                                       \\\hline
@@ -223,6 +223,6 @@ Calculated              & Average: 1/10th             & 1.51            & 2.87  
 The following deliverables will be handled in with this Vertiefungsarbeit:
 \begin{itemize}
     \item This work produced a pose estimation system, which is able to estimate a cow teat's pose with an average error of 0.67 cm and a standard deviation of 2.4 cm. 
-    \item This work also contributed to two other variations of the MAV algorithm that were developed by the project team for the cow teats project.
-    \item For future research, an Unreal Engine 4 project with 5 different photorealistic scenes for a synthetic data set generation, including a cow teats data set containing over 400k images for pose estimation.
+    \item This work also contributed to two other successful alternatives to the MAV algorithm that were developed by the project team for the cow teats project.
+    \item For future research, an Unreal Engine 4 project with 5 different photorealistic scenes for a synthetic data set generation, including a cow teats data set containing over 400,000 images for pose estimation.
 \end{itemize}

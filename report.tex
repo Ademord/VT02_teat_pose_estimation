@@ -65,6 +65,16 @@
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 \usepackage{parskip}% http://ctan.org/pkg/parskip
 
+\usepackage[
+backend=biber,
+style=numeric,
+citestyle=numeric,
+sorting=none
+]{biblatex}
+
+\addbibresource{report.bib} %Imports bibliography file
+
+
 % \usepackage{enumitem}
 
 % \newlist{SubItemList}{itemize}{1}
@@ -133,7 +143,8 @@
 \appendix
 
 \begin{RaggedRight}
-	\bibliography{report.bib}
+    \printbibliography
+% 	\bibliography{report.bib}
 \end{RaggedRight}
 \newpage
 
